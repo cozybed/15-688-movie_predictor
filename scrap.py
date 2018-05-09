@@ -1,23 +1,17 @@
 
 import json
-
+import glob
 import requests
 from bs4 import BeautifulSoup
 import pandas
 
 
+def remove_column(df, drop_list):
+	for col_name in drop_list:
+		df.drop(col_name, axis=1, inplace=True)
+	return df
 
-
-urls_2016 = [
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=1&ref_=adv_nxt',
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=2&ref_=adv_nxt',
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=3&ref_=adv_nxt',
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=4&ref_=adv_nxt',
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=5&ref_=adv_nxt',
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=6&ref_=adv_nxt',
-'https://www.imdb.com/search/title?year=2007&title_type=feature&view=advanced&sort=boxoffice_gross_us,desc&page=7&ref_=adv_nxt'
-
-]
+urls = []
 
 headers = {
     'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'
@@ -26,7 +20,7 @@ headers = {
 
 json_arr = []
 
-for url in urls_2016:
+for url in urls:
 
 	response = requests.get(url, headers = headers)
 
@@ -48,5 +42,21 @@ for url in urls_2016:
 	print ("....")
 
 df = pandas.DataFrame.from_dict(json_arr, orient='columns')
-df.to_csv("sample/sample_2007.csv")
-print (df)
+#df.to_csv("sample/sample_2001.csv")
+
+
+path ='sample' # use your path
+allFiles = glob.glob(path + "/*.csv")
+frame = pandas.DataFrame()
+list_ = []
+for file_ in allFiles:
+    df = pandas.read_csv(file_,index_col=None, header=0)
+    list_.append(df)
+    print (file_)
+frame = pandas.concat(list_)
+frame = remove_column(frame, ['Website','Plot', 'Response', 'Unnamed: 0','Type', 'Error'])
+
+frame = frame.dropna(axis=0, how='any')
+print (len(frame))
+frame.to_csv("sample_all.csv")
+
