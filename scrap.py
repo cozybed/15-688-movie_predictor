@@ -19,12 +19,8 @@ headers = {
 
 
 json_arr = []
-
 for url in urls:
-
 	response = requests.get(url, headers = headers)
-
-
 	root = BeautifulSoup(response.text, "html5lib")
 	items = root.find_all ("div", class_="lister-item mode-advanced")
 
@@ -39,7 +35,6 @@ for url in urls:
 		test  = requests.get(url_token, headers = headers)
 		test_json = json.loads(test.text)
 		json_arr.append(test_json)
-	print ("....")
 
 df = pandas.DataFrame.from_dict(json_arr, orient='columns')
 #df.to_csv("sample/sample_2001.csv")
