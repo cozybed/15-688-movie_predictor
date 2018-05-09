@@ -62,7 +62,7 @@ def analysis(y_p, y_t):
     
     for i,val in enumerate(diff):
         if val != 0:
-            print(y_p[i], y_t[i], val, gross_df[1900+i]) 
+            print(y_p[i], y_t[i], val, gross_df[1600+i]) 
             
 def wrong_pred_distribution(y_p, y_t):
     diff = y_p - y_t
@@ -121,58 +121,58 @@ y = np.array(y)
 
 #################
 clf_lg = LogisticRegression()
-clf_lg.fit(X[:1900,:], y[:1900])
-y_p = clf_lg.predict(X[1900:,:])
-print("Validation accuracy:", np.mean(y_p==y[1900:]))
+clf_lg.fit(X[:1600,:], y[:1600])
+y_p = clf_lg.predict(X[1600:,:])
+print("Validation accuracy:", np.mean(y_p==y[1600:]))
 
-#analysis(y_p, y[1900:])
-print(wrong_pred_distribution(y_p, y[1900:]))
-print(wrong_true_distribution(y_p, y[1900:]))
+#analysis(y_p, y[1600:])
+print(wrong_pred_distribution(y_p, y[1600:]))
+print(wrong_true_distribution(y_p, y[1600:]))
 
 
 #################
 clf = SVC()
-clf.fit(X[:1900,:], y[:1900])
-y_p = clf.predict(X[1900:,:])
+clf.fit(X[:1600,:], y[:1600])
+y_p = clf.predict(X[1600:,:])
 '''
 for i, val in enumerate(y_p):
     if val == 0:
         y_p[i] = clf_lg.predict(X[i,:].reshape(1, -1))
 '''
-print("Validation accuracy:", np.mean(y_p==y[1900:]))
+print("Validation accuracy:", np.mean(y_p==y[1600:]))
 
-print(wrong_pred_distribution(y_p, y[1900:]))
-print(wrong_true_distribution(y_p, y[1900:]))
-indice = get_wrong_index(y_p, y[1900:])
+print(wrong_pred_distribution(y_p, y[1600:]))
+print(wrong_true_distribution(y_p, y[1600:]))
+indice = get_wrong_index(y_p, y[1600:])
 df.iloc[indice,:].to_csv("wrong.csv")
 #################
 clf =  MLPClassifier(alpha=0.3,activation='logistic')
-clf.fit(X[:1900,:], y[:1900])
-y_p = clf.predict(X[1900:,:])
-print("Validation accuracy:", np.mean(y_p==y[1900:]))
+clf.fit(X[:1600,:], y[:1600])
+y_p = clf.predict(X[1600:,:])
+print("Validation accuracy:", np.mean(y_p==y[1600:]))
 
-print(wrong_pred_distribution(y_p, y[1900:]))
-print(wrong_true_distribution(y_p, y[1900:]))
+print(wrong_pred_distribution(y_p, y[1600:]))
+print(wrong_true_distribution(y_p, y[1600:]))
 
 
 #################
 clf = KNeighborsClassifier(7)
-clf.fit(X[:1900,:], y[:1900])
-y_p = clf.predict(X[1900:,:])
-print("Validation accuracy:", np.mean(y_p==y[1900:]))
+clf.fit(X[:1600,:], y[:1600])
+y_p = clf.predict(X[1600:,:])
+print("Validation accuracy:", np.mean(y_p==y[1600:]))
 
-print(wrong_pred_distribution(y_p, y[1900:]))
-print(wrong_true_distribution(y_p, y[1900:]))
+print(wrong_pred_distribution(y_p, y[1600:]))
+print(wrong_true_distribution(y_p, y[1600:]))
 
 
 #################
 clf_tree = DecisionTreeClassifier(max_depth=5)
-clf_tree.fit(X[:1900,:], y[:1900])
-y_p = clf_tree.predict(X[1900:,:])
-print("Validation accuracy:", np.mean(y_p==y[1900:]))
+clf_tree.fit(X[:1600,:], y[:1600])
+y_p = clf_tree.predict(X[1600:,:])
+print("Validation accuracy:", np.mean(y_p==y[1600:]))
 
-print(wrong_pred_distribution(y_p, y[1900:]))
-print(wrong_true_distribution(y_p, y[1900:]))
+print(wrong_pred_distribution(y_p, y[1600:]))
+print(wrong_true_distribution(y_p, y[1600:]))
 
 
 for i, val in enumerate(clf_tree.feature_importances_):
