@@ -44,15 +44,18 @@ def one_hot_encoding_column(col_name):
 
 
 
-df = pd.read_csv('sample_all.csv',index_col=['imdbID'], header=0)
+df = pd.read_csv('result.csv',index_col=['imdbID'], header=0)
+df = df[np.isfinite(df['Opening Weekend USA'])]
 df = shuffle(df)
+
 movie_size = (len(df))
 test_size = int(movie_size/5)
 sample_size = movie_size - test_size
 
 df['BoxOffice'] = df['BoxOffice'].replace( '[\$,)]','', regex=True ).astype(float)
+
 df['imdbRating'] = df['imdbRating'].round()
-labels = get_labels(df['BoxOffice'])
+labels = get_labels(df['Opening Weekend USA'])
 
 
 actors_map, Matrix = one_hot_encoding_column('Actors')
@@ -70,8 +73,11 @@ clf_l2_LR = LogisticRegression(penalty='l2', tol=0.01)
 clf_l2_LR.fit(x_train, y_train)
 y_predit = clf_l2_LR.predict(x_test)
 
-acc = np.mean(y_predit == y_test)
-print (acc)
+#acc = np.mean(y_predit == y_test)
+
+y_predit = clf_l2_LR.predict(x_test)
+
+print (clf_l2_LR.predict)
 
 
 
