@@ -62,7 +62,7 @@ def analysis(y_p, y_t):
     
     for i,val in enumerate(diff):
         if val != 0:
-            print(y_p[i], y[i], val, gross_df[3500+i]) 
+            print(y_p[i], y_t[i], val, gross_df[3500+i]) 
             
 def wrong_pred_distribution(y_p, y_t):
     diff = y_p - y_t
