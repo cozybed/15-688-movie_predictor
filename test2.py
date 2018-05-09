@@ -12,15 +12,13 @@ from collections import Counter
 
 
 def get_labels(gross):
-    gross_classes = np.array([0,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.8,1.0,1.2,1.4,1.7,2.0,2.4,2.8,3.2,3.6,4.0,4.5,5.0,5.5,6.0,6.5,7.0,float('Inf')]) * 1e8
+    gross_classes = np.array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.8,1.0,1.2,1.4,1.7,2.0,2.4,2.8,3.2,3.6,4.0,4.5,5.0,5.5,6.0,6.5,7.0,float('Inf')]) * 1e8
     
     labels = []
-    print(gross.shape)
     for i in gross:
         for j in range(len(gross_classes)):
             if gross_classes[j] <= i < gross_classes[j+1]:
                 labels.append(j)
-    print(len(labels))
     return labels
 
 def remove_column(df, drop_list):
@@ -66,12 +64,20 @@ def analysis(y_p, y_t):
         if val != 0:
             print(y_p[i], y[i], val, gross_df[3500+i]) 
             
-def wrong_distribution(y_p, y_t):
+def wrong_pred_distribution(y_p, y_t):
     diff = y_p - y_t
     c = Counter()
     for i,val in enumerate(diff):
         if val != 0:
             c[y_p[i]] += 1
+    return c
+
+def wrong_true_distribution(y_p, y_t):
+    diff = y_p - y_t
+    c = Counter()
+    for i,val in enumerate(diff):
+        if val != 0:
+            c[y_t[i]] += 1
     return c
 
 df = pandas.read_csv("movie_metadata.csv")
@@ -84,9 +90,7 @@ df = df.reset_index()
 
 gross_df = df['gross']
 
-print(df.shape, df['gross'].shape)
 y = get_labels(df['gross'])
-print(len(y))
 
 df = one_hot_encode_genres(df)
 #csv_1 = df.to_csv("movie_genre.csv") #export
@@ -99,42 +103,63 @@ df = remove_column(df, ['director_facebook_likes', 'actor_3_facebook_likes', 'ac
 
 X = df.as_matrix()
 y = np.array(y)
-print(X.shape, y.shape)
 
-
-clf = LogisticRegression()
-clf.fit(X[:3500,:], y[:3500])
-y_p = clf.predict(X[3500:,:])
+#################
+clf_lg = LogisticRegression()
+clf_lg.fit(X[:3500,:], y[:3500])
+y_p = clf_lg.predict(X[3500:,:])
 print("Validation accuracy:", np.mean(y_p==y[3500:]))
 
 #analysis(y_p, y[3500:])
-print(wrong_distribution(y_p, y[3500:]))
+print(wrong_pred_distribution(y_p, y[3500:]))
+print(wrong_true_distribution(y_p, y[3500:]))
 
+
+#################
 clf = SVC()
 clf.fit(X[:3500,:], y[:3500])
 y_p = clf.predict(X[3500:,:])
+'''
+for i, val in enumerate(y_p):
+    if val == 0:
+        y_p[i] = clf_lg.predict(X[i,:].reshape(1, -1))
+'''
 print("Validation accuracy:", np.mean(y_p==y[3500:]))
 
-print(wrong_distribution(y_p, y[3500:]))
+print(wrong_pred_distribution(y_p, y[3500:]))
+print(wrong_true_distribution(y_p, y[3500:]))
 
+
+#################
 clf =  MLPClassifier(alpha=0.3,activation='logistic')
 clf.fit(X[:3500,:], y[:3500])
 y_p = clf.predict(X[3500:,:])
 print("Validation accuracy:", np.mean(y_p==y[3500:]))
 
-print(wrong_distribution(y_p, y[3500:]))
+print(wrong_pred_distribution(y_p, y[3500:]))
+print(wrong_true_distribution(y_p, y[3500:]))
+
+
+#################
 clf = KNeighborsClassifier(7)
 clf.fit(X[:3500,:], y[:3500])
 y_p = clf.predict(X[3500:,:])
 print("Validation accuracy:", np.mean(y_p==y[3500:]))
 
-print(wrong_distribution(y_p, y[3500:]))
+print(wrong_pred_distribution(y_p, y[3500:]))
+print(wrong_true_distribution(y_p, y[3500:]))
+
+
+#################
 clf_tree = DecisionTreeClassifier(max_depth=5)
 clf_tree.fit(X[:3500,:], y[:3500])
 y_p = clf_tree.predict(X[3500:,:])
 print("Validation accuracy:", np.mean(y_p==y[3500:]))
 
-print(wrong_distribution(y_p, y[3500:]))
+print(wrong_pred_distribution(y_p, y[3500:]))
+print(wrong_true_distribution(y_p, y[3500:]))
+
+
 for i, val in enumerate(clf_tree.feature_importances_):
     if val != 0:
         print(df.columns[i],'\t', val)
