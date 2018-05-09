@@ -117,7 +117,7 @@ def get_details(url):
     return res
 
 
-def gogo(years=['2008'], pages=['1','2','3','4','5','6','7','8']):
+def gogo(years=['2003'], pages=['1','2','3','4','5','6','7','8']):
     samples = []
 
     # Preparing the monitoring of the loop
