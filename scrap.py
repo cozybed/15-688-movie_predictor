@@ -54,7 +54,7 @@ for file_ in allFiles:
     list_.append(df)
     print (file_)
 frame = pandas.concat(list_)
-frame = remove_column(frame, ['Website','Plot', 'Response', 'Unnamed: 0','Type', 'Error'])
+frame = remove_column(frame, ['Website','Plot', 'Response', 'Unnamed: 0','Type', 'Error','Poster'])
 
 frame = frame.dropna(axis=0, how='any')
 print (len(frame))
