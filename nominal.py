@@ -12,10 +12,10 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeClassifier
 
-
+import matplotlib.pyplot as plt
 
 def get_labels(gross):
-    gross_classes = np.array([0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08, 0.09, float('Inf')]) * 1e8
+    gross_classes = np.array([0,0.01, float('Inf')]) * 1e8
     
     labels = []
     for i in gross:
@@ -24,12 +24,20 @@ def get_labels(gross):
                 labels.append(j)
     return labels
 
-def one_hot_encoding_column(col_name):
+def get_log_label (bins, box_office_value):
+    log_val = np.log(box_office_value)
+    for i in range(len(bins[1])):
+        if bins[1][i] <= log_val and log_val <= bins[1][i+1]:
+            return i
+    return len(bins[1]) - 1
+
+
+def one_hot_encoding_column(col_name, delimiter=','):
 	item_map = {}
 	item_count = 0
 	for i in range(movie_size):
 		items = str(df[col_name].iloc[i])
-		items_arr = items.split(",")
+		items_arr = items.split(delimiter)
 		for item in items_arr:
 			item = item.strip()
 			if item not in item_map:
@@ -39,7 +47,7 @@ def one_hot_encoding_column(col_name):
 	Matrix = [[0 for x in range(item_count)] for y in range(movie_size)] 
 	for i in range(movie_size):
 		items = str(df[col_name].iloc[i])
-		items_arr = items.split(",")
+		items_arr = items.split(delimiter)
 		for item in items_arr:
 			item = item.strip()
 			idx = item_map[item]
@@ -57,27 +65,36 @@ df = df[np.isfinite(df['Opening Weekend USA'])]
 df = shuffle(df)
 
 movie_size = (len(df))
-test_size = int(movie_size/5)
+test_size = int(movie_size/7)
 sample_size = movie_size - test_size
 
 df['BoxOffice'] = df['BoxOffice'].replace( '[\$,)]','', regex=True ).astype(float)
 df['Runtime'] = df['Runtime'].replace( 'min','', regex=True ).astype(int)
+df['Released'] = [a[3:6] for a in df['Released']]
 
 
+bin_size = 5
 
 
+bins = plt.hist(np.log(df['Opening Weekend USA']), bin_size)
+
+for i in  range(bin_size):
+    print ("label", i , ":",  np.exp(bins[1][i]), '-' ,np.exp(bins[1][i+1]), "," , str(bins[0][i]) , "movies")
 
 df['imdbRating'] = df['imdbRating'].round()
-labels = get_labels(df['Opening Weekend USA'])
-
+labels2 = get_labels(df['Opening Weekend USA'])
+labels = [get_log_label(bins, o) for o in df['Opening Weekend USA']]
 
 actors_map, actors_Matrix = one_hot_encoding_column('Actors')
 genre_map, genre_Matrix = one_hot_encoding_column('Genre')
 contry_map, country_Matrix = one_hot_encoding_column('Country')
-production_map, production_Matrix = one_hot_encoding_column('Production')
+production_map, production_Matrix = one_hot_encoding_column('Production', '/')
 rated_map, rated_Matrix = one_hot_encoding_column('Rated')
 year_map, year_Matrix = one_hot_encoding_column('Year')
 director_map, director_Matrix = one_hot_encoding_column('Director')
+released_map, released_Matrix =  one_hot_encoding_column('Released')
+
+
 
 #year_Matrix = df['Year'].as_matrix()
 #print(year_Matrix.shape)
@@ -87,53 +104,53 @@ director_map, director_Matrix = one_hot_encoding_column('Director')
 
 t_Matrix = np.concatenate((actors_Matrix, \
 							production_Matrix,\
-							genre_Matrix, \
-							country_Matrix, \
-							rated_Matrix,\
-							year_Matrix
+							genre_Matrix,
+							country_Matrix,
+							rated_Matrix,
+							year_Matrix,
+							director_Matrix,
+							released_Matrix
 							), axis=1)
 
 
-f_Matrix = actors_Matrix
+f_Matrix = year_Matrix
 
-print (t_Matrix.shape, t_Matrix.shape )
 
-x_train = t_Matrix[:sample_size]
-x_test = t_Matrix[sample_size: ]
+x_train = t_Matrix[df['Year'] != 2017]
+x_test = t_Matrix[df['Year'] == 2017 ]
 
-y_train = np.array(labels[:sample_size])
-y_test = np.array(labels[sample_size: ])
+y_train = np.array(labels)[df['Year'] != 2017]
+y_test = np.array(labels)[df['Year'] == 2017 ]
 
 print ("Finished Setting up testing and training set:")
-print (x_train.shape, y_train.shape)
 
 #clf_l2_LR = DecisionTreeClassifier()
 
-clf_l2_LR = LogisticRegression(multi_class="multinomial", solver = 'lbfgs')
+clf_l2_LR = LogisticRegression(multi_class="multinomial", solver = 'lbfgs', \
+	class_weight ='balanced', random_state = 1)
 
 
 
 clf_l2_LR.fit(x_train, y_train)
 y_predit = clf_l2_LR.predict(x_test)
 
-"""
+
+
+'''
 importances = clf_l2_LR.feature_importances_
 indices = np.argsort(importances)[::-1]
 # Print the feature ranking
 
 
 
-print("Feature ranking:")
-
 cc = 0
 for f in range(t_Matrix.shape[1]):
-    print("%d. %s (%f)" % (f + 1, recover_key(director_map, indices[f]), importances[indices[f]]))
+    print("%d. %s (%f)" % (f + 1, recover_key(released_map, indices[f]), importances[indices[f]]))
     if cc >=20:
     	break
     cc += 1
+'''
 
-
-"""
 
 #for ii in range (len(y_test)):
 	#print (y_predit[ii], y_test[ii])
