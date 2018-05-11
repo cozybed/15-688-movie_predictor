@@ -29,7 +29,6 @@ frame = pd.concat(list_)
 print (len(frame))
 frame.to_csv("sample_all_2.csv")
 
-"""
 
 
 df1 = pd.read_csv('sample_all.csv',index_col=['imdbID'], header=0)
@@ -38,6 +37,11 @@ print (len(df1), len(df2))
 
 result = pd.concat([df1, df2], ignore_index=False,axis=1, join='inner')
 result.drop('Unnamed: 0', axis=1, inplace=True)
+"""
 
-result.to_csv("result.csv")
-print (len(result))
+
+
+df = pd.read_csv('result.csv',index_col=['imdbID'], header=0)
+df.drop('Metascore', axis=1, inplace=True)
+df.to_csv("result.csv")
+print (len(df))
